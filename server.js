@@ -22,31 +22,43 @@ io.on('connection', (socket) => {
 
   // Listen for oracle activations
   socket.on('activate-oracle', (data) => {
-    // Set new data
-    oracleData[data.encounter].oracles[data.oracleName].on = true;
-    oracleData[data.encounter].oracles[data.oracleName].timestamp =
-      data.timestamp;
+    try {
+      // Set new data
+      oracleData[data.encounter].oracles[data.oracleName].on = true;
+      oracleData[data.encounter].oracles[data.oracleName].timestamp =
+        data.timestamp;
 
-    // Number oracles
-    const numberedOracles = numberOracles(oracleData[data.encounter].oracles);
-    for (oracle of numberedOracles) {
-      oracleData[data.encounter].oracles[oracle.oracleName].num = oracle.num;
+      // Number oracles
+      const numberedOracles = numberOracles(oracleData[data.encounter].oracles);
+      for (oracle of numberedOracles) {
+        oracleData[data.encounter].oracles[oracle.oracleName].num = oracle.num;
+      }
+
+      io.sockets.emit('oracle-configuration', oracleData);
+    } catch (err) {
+      console.log(err);
     }
-
-    io.sockets.emit('oracle-configuration', oracleData);
   });
 
   // Listen for cycle clears
   socket.on('clear-cycle', (data) => {
-    oracleData[data.encounter] = JSON.parse(
-      JSON.stringify(baseData[data.encounter])
-    );
-    io.sockets.emit('oracle-configuration', oracleData);
+    try {
+      oracleData[data.encounter] = JSON.parse(
+        JSON.stringify(baseData[data.encounter])
+      );
+      io.sockets.emit('oracle-configuration', oracleData);
+    } catch (err) {
+      console.log(err);
+    }
   });
 
   // Listen for atheon planet change
   socket.on('change-planet', (data) => {
-    oracleData.atheon.planet = data.planet;
-    io.sockets.emit('oracle-configuration', oracleData);
+    try {
+      oracleData.atheon.planet = data.planet;
+      io.sockets.emit('oracle-configuration', oracleData);
+    } catch (err) {
+      console.log(err);
+    }
   });
 });
