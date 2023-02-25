@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 const io = require('socket.io')(5002, {
   cors: {
     origin: '*',
@@ -8,12 +10,18 @@ const { numberOracles } = require('./utils');
 
 let oracleData = JSON.parse(JSON.stringify(baseData));
 
+io.use((socket, next) => {
+  if (socket.handshake.auth.joinCode !== process.env.JOIN_CODE) return;
+
+  next();
+});
+
 io.on('connection', (socket) => {
   console.log('User connected');
   socket.emit('oracle-configuration', oracleData);
 
   // Listen for oracle activations
-  socket.on('update', (data) => {
+  socket.on('activate-oracle', (data) => {
     // Set new data
     oracleData[data.encounter].oracles[data.oracleName].on = true;
     oracleData[data.encounter].oracles[data.oracleName].timestamp =
@@ -33,6 +41,12 @@ io.on('connection', (socket) => {
     oracleData[data.encounter] = JSON.parse(
       JSON.stringify(baseData[data.encounter])
     );
+    io.sockets.emit('oracle-configuration', oracleData);
+  });
+
+  // Listen for atheon planet change
+  socket.on('change-planet', (data) => {
+    oracleData.atheon.planet = data.planet;
     io.sockets.emit('oracle-configuration', oracleData);
   });
 });
