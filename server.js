@@ -43,8 +43,8 @@ io.on('connection', (socket) => {
   // Listen for cycle clears
   socket.on('clear-cycle', (data) => {
     try {
-      oracleData[data.encounter] = JSON.parse(
-        JSON.stringify(baseData[data.encounter])
+      oracleData[data.encounter].oracles = JSON.parse(
+        JSON.stringify(baseData[data.encounter].oracles)
       );
       io.sockets.emit('oracle-configuration', oracleData);
     } catch (err) {
